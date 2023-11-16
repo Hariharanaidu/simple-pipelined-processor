@@ -1,0 +1,76 @@
+module pip_processor(
+    input wire clk,        // Clock input
+    input wire reset,      // Reset input
+    input wire [7:0] instr,// Instruction input
+    input wire [7:0] data_a,// Operand A input
+    input wire [7:0] data_b,// Operand B input
+    output reg [7:0] result // Result output
+);
+
+// Registers to store pipeline stages
+reg [7:0] if_id_instr;
+reg [7:0] id_ex_instr;
+reg [7:0] ex_mem_instr;
+reg [7:0] mem_wb_instr;
+
+// Registers to store pipeline data
+reg [7:0] id_ex_data_a;
+reg [7:0] id_ex_data_b;
+reg [7:0] ex_mem_result;
+reg [7:0] mem_wb_result;
+
+// Fetch stage
+always @(posedge clk or posedge reset) begin
+    if (reset) begin
+        if_id_instr <= 8'b0; // Reset to initial value
+    end else begin
+        if_id_instr <= instr; // Fetch instruction
+    end
+end
+
+// Decode stage
+always @(posedge clk or posedge reset) begin
+    if (reset) begin
+        id_ex_instr <= 8'b0; // Reset to initial value
+        id_ex_data_a <= 8'b0; // Reset to initial value
+        id_ex_data_b <= 8'b0; // Reset to initial value
+    end else begin
+        id_ex_instr <= if_id_instr; // Pass instruction to next stage
+        id_ex_data_a <= data_a; // Pass operand A to next stage
+        id_ex_data_b <= data_b; // Pass operand B to next stage
+    end
+end
+
+// Execute stage
+always @(posedge clk or posedge reset) begin
+    if (reset) begin
+        ex_mem_instr <= 8'b0; // Reset to initial value
+        ex_mem_result <= 8'b0; // Reset to initial value
+    end else begin
+        ex_mem_instr <= id_ex_instr; // Pass instruction to next stage
+        // Perform execution based on the instruction
+        case (id_ex_instr)
+            3'b000: ex_mem_result <= id_ex_data_a + id_ex_data_b; // ADD
+            3'b001: ex_mem_result <= id_ex_data_a - id_ex_data_b; // SUB
+            default: ex_mem_result <= 8'b0; // NOP (no operation)
+        endcase
+    end
+end
+
+// Writeback stage
+always @(posedge clk or posedge reset) begin
+    if (reset) begin
+        mem_wb_instr <= 8'b0; // Reset to initial value
+        mem_wb_result <= 8'b0; // Reset to initial value
+    end else begin
+        mem_wb_instr <= ex_mem_instr; // Pass instruction to next stage
+        mem_wb_result <= ex_mem_result; // Pass result to output
+    end
+end
+
+// Output result from Writeback stage
+always @(*) begin
+    result = mem_wb_result;
+end
+
+endmodule

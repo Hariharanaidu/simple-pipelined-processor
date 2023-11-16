@@ -1,0 +1,72 @@
+`timescale 1ns / 1ps
+
+module pip_processor_tb1;
+
+    reg clk;
+    reg reset;
+    reg [7:0] instr;
+    reg [7:0] data_a;
+    reg [7:0] data_b;
+    wire [7:0] result;
+
+    // Instantiate the SimpleProcessor module
+    pip_processor dut (
+        .clk(clk),
+        .reset(reset),
+        .instr(instr),
+        .data_a(data_a),
+        .data_b(data_b),
+        .result(result)
+    );
+
+    // Clock generation
+    always #5 clk = ~clk;
+
+    initial begin
+        clk = 0;
+        reset = 1;
+        instr = 8'b00000000; // Initialize instruction
+        data_a = 8'b00000000; // Initialize operand A
+        data_b = 8'b00000000; // Initialize operand B
+
+        // Reset for a few clock cycles
+        #2 reset = 0;
+
+        // Test sequence 1: NOP instruction
+         instr = 8'b00000000; // NOP instruction
+         data_a = 8'b00000000; // Operand A = 0
+         data_b = 8'b00000000; // Operand B = 0
+
+        // Wait for pipeline stages to process instructions
+        
+
+        // Read the result after a few clock cycles
+        $display("Test 1 - NOP: Result: %d", result);
+
+        // Test sequence 2: ADD instruction
+        instr = 8'b00000001; // ADD instruction
+        data_a = 8'b00100000; // Operand A = 32
+        data_b = 8'b00001100; // Operand B = 12
+
+        // Wait for pipeline stages to process instructions
+        
+
+        // Read the result after a few clock cycles
+        $display("Test 2 - ADD: Result: %d", result);
+
+        // Test sequence 3: SUB instruction
+        instr = 8'b00000010; // SUB instruction
+        data_a = 8'b00100000; // Operand A = 32
+        data_b = 8'b00001100; // Operand B = 12
+
+        // Wait for pipeline stages to process instructions
+       
+
+        // Read the result after a few clock cycles
+        $display("Test 3 - SUB: Result: %d", result);
+
+        // End simulation
+        #100 $finish;
+    end
+
+endmodule
